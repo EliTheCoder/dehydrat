@@ -1,6 +1,6 @@
 # DehydRAT
 
-DehydRAT is a simple program that checks if a jar file makes any calls to the Minecraft method to get a session ID.
+DehydRAT (/ˌdiːhaɪˈdræt/) is a simple program that checks if a jar file makes any calls to the Minecraft method to get a session ID.
 
 ## Usage
 
