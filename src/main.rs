@@ -26,6 +26,8 @@ fn main() {
 
 	let mut nasty_files: Vec<String> = Vec::new();
 
+	println!("Scanning {} for RATs", fname.file_name().unwrap().to_str().unwrap());
+
 	let mut pb = ProgressBar::new(archive.len().try_into().unwrap());
 
 	for i in 0..archive.len() {
