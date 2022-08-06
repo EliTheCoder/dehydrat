@@ -21,9 +21,24 @@ fn main() {
 /___,' \\___|_| |_|\\__, |\\__,_\\/ \\_/\\_/ \\_/\\/    
                   |___/                         ";
 
+	let target_list = [
+		"110432",
+		"discord.com/api",
+		"discordapp.com/api",
+		"Local Storage",
+		"leveldb",
+		"APPDATA",
+		"Google\\Chrome",
+		"Login Data",
+		"launcher_accounts.json",
+		"user.home",
+		"tweakClass",
+	];
+
 	println!("{}", title);
 	println!("by EliTheCoder\n");
 
+	// TODO: convert to HashMap, check for duplicates
 	let mut nasty_files: Vec<String> = Vec::new();
 
 	println!("Scanning {} for RATs", fname.file_name().unwrap().to_str().unwrap());
@@ -35,18 +50,16 @@ fn main() {
 		let mut bytes = Vec::new();
 		file.read_to_end(&mut bytes).unwrap();
 
-		// check if bytes contains string 110432
-		for i in bytes.windows(6) {
-			if i == b"110432" {
-
-				// push the file name to nasty_files
-				nasty_files.push(file.enclosed_name().unwrap().to_str().unwrap().to_owned());
-				break;
-
+		for word in target_list {
+			for i in bytes.windows(word.len()) {
+				if i == word.as_bytes() {
+					// push the file name to nasty_files
+					// TODO: also push which word was detected
+					nasty_files.push(file.enclosed_name().unwrap().to_str().unwrap().to_owned());
+					break;
+				}
 			}
-			pb.inc();
 		}
-
 	}
 	pb.finish_println("\n");
 	println!("{} file(s) found containing RATs", nasty_files.len());
