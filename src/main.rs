@@ -69,7 +69,7 @@ fn main() {
 		}
 	}
 	pb.finish_println("\n");
-	println!("{} file(s) found containing RATs", nasty_files.len());
+	println!("{} file(s) found containing suspicious items", nasty_files.len());
 	for (file, words) in nasty_files.iter().sorted() {
 		println!("{} {:?}", file, words);
 	}
