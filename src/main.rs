@@ -1,6 +1,6 @@
-use std::{fs, io::{Read, self}};
+use itertools::Itertools;
+use std::{collections::HashMap,	fs,	io::{Read, self}};
 use pbr::ProgressBar;
-
 
 fn main() {
 	let args = std::env::args().collect::<Vec<_>>();
@@ -21,10 +21,32 @@ fn main() {
 /___,' \\___|_| |_|\\__, |\\__,_\\/ \\_/\\_/ \\_/\\/    
                   |___/                         ";
 
+	let target_list = [
+		"func_148254_d",
+		"awt/Robot",
+		"squareup/okhttp",
+		"launcher_accounts.json",
+		".minecraft/versions",
+		".minecraft\\versions",
+		".minecraft/mods",
+		".minecraft\\mods",
+		"Local Storage",
+		"leveldb",
+		"APPDATA",
+		"Google\\Chrome",
+		"Login Data",
+		"user.home",
+		"checkip.amazonaws",
+		"discord.com/api",
+		"discordapp.com/api",
+		"dropboxusercontent",
+		"drive.google",
+	];
+
 	println!("{}", title);
 	println!("by EliTheCoder\n");
 
-	let mut nasty_files: Vec<String> = Vec::new();
+	let mut nasty_files: HashMap<String, Vec<String>> = HashMap::new();
 
 	println!("Scanning {} for RATs", fname.file_name().unwrap().to_str().unwrap());
 
@@ -35,22 +57,22 @@ fn main() {
 		let mut bytes = Vec::new();
 		file.read_to_end(&mut bytes).unwrap();
 
-		// check if bytes contains string 110432
-		for i in bytes.windows(6) {
-			if i == b"110432" {
-
-				// push the file name to nasty_files
-				nasty_files.push(file.enclosed_name().unwrap().to_str().unwrap().to_owned());
-				break;
-
+		for word in target_list {
+			for i in bytes.windows(word.len()) {
+				if i == word.as_bytes() {
+					// push the file name to nasty_files
+					let entry = nasty_files.entry(file.enclosed_name().unwrap().to_str().unwrap().to_owned()).or_insert(Vec::new());
+					entry.push(word.to_string());
+					break;
+				}
 			}
-			pb.inc();
 		}
-
 	}
 	pb.finish_println("\n");
-	println!("{} file(s) found containing RATs", nasty_files.len());
-	println!("{}", nasty_files.join("\n"));
+	println!("{} file(s) found containing suspicious items", nasty_files.len());
+	for (file, words) in nasty_files.iter().sorted() {
+		println!("{} {:?}", file, words);
+	}
 	println!();
 	println!("Press enter to exit");
 
