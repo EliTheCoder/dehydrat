@@ -1,6 +1,6 @@
-use std::{fs, io::{Read, self}};
+use itertools::Itertools;
+use std::{collections::HashMap,	fs,	io::{Read, self}};
 use pbr::ProgressBar;
-
 
 fn main() {
 	let args = std::env::args().collect::<Vec<_>>();
@@ -38,8 +38,7 @@ fn main() {
 	println!("{}", title);
 	println!("by EliTheCoder\n");
 
-	// TODO: convert to HashMap, check for duplicates
-	let mut nasty_files: Vec<String> = Vec::new();
+	let mut nasty_files: HashMap<String, Vec<String>> = HashMap::new();
 
 	println!("Scanning {} for RATs", fname.file_name().unwrap().to_str().unwrap());
 
@@ -54,8 +53,8 @@ fn main() {
 			for i in bytes.windows(word.len()) {
 				if i == word.as_bytes() {
 					// push the file name to nasty_files
-					// TODO: also push which word was detected
-					nasty_files.push(file.enclosed_name().unwrap().to_str().unwrap().to_owned());
+					let entry = nasty_files.entry(file.enclosed_name().unwrap().to_str().unwrap().to_owned()).or_insert(Vec::new());
+					entry.push(word.to_string());
 					break;
 				}
 			}
@@ -63,7 +62,9 @@ fn main() {
 	}
 	pb.finish_println("\n");
 	println!("{} file(s) found containing RATs", nasty_files.len());
-	println!("{}", nasty_files.join("\n"));
+	for (file, words) in nasty_files.iter().sorted() {
+		println!("{} {:?}", file, words);
+	}
 	println!();
 	println!("Press enter to exit");
 
