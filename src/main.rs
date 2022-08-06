@@ -22,17 +22,25 @@ fn main() {
                   |___/                         ";
 
 	let target_list = [
-		"110432",
-		"discord.com/api",
-		"discordapp.com/api",
+		"func_148254_d",
+		"awt/Robot",
+		"squareup/okhttp",
+		"launcher_accounts.json",
+		".minecraft/versions",
+		".minecraft\\versions",
+		".minecraft/mods",
+		".minecraft\\mods",
 		"Local Storage",
 		"leveldb",
 		"APPDATA",
 		"Google\\Chrome",
 		"Login Data",
-		"launcher_accounts.json",
 		"user.home",
-		"tweakClass",
+		"checkip.amazonaws",
+		"discord.com/api",
+		"discordapp.com/api",
+		"dropboxusercontent",
+		"drive.google",
 	];
 
 	println!("{}", title);
