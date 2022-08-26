@@ -1,36 +1,21 @@
+extern crate reqwest;
+extern crate tempfile;
+extern crate zip;
+
 use itertools::Itertools;
-use pbr::ProgressBar;
-use std::{
-    collections::HashMap,
-    fs,
-    io::{self, Read},
-};
+use std::{collections::HashMap, env, io::Read};
+use url::Url;
 
 fn main() {
-    let title = "    ___     _               _   __    _   _____ 
-   /   \\___| |__  _   _  __| | /__\\  /_\\ /__   \\
-  / /\\ / _ \\ '_ \\| | | |/ _` |/ \\// //_\\\\  / /\\/
- / /_//  __/ | | | |_| | (_| / _  \\/  _  \\/ /   
-/___,' \\___|_| |_|\\__, |\\__,_\\/ \\_/\\_/ \\_/\\/    
-                  |___/                         ";
+    let url = Url::parse(&env::args().nth(1).expect("Must provide a URL")).expect("Invalid URL");
 
-    println!("{}", title);
-    println!("by EliTheCoder\n");
+    let mut tmpfile = tempfile::tempfile().unwrap();
+    reqwest::blocking::get(url)
+        .expect("Error fetching file")
+        .copy_to(&mut tmpfile)
+        .unwrap();
 
-    let args = std::env::args().collect::<Vec<_>>();
-    if args.len() != 2 {
-        println!("To use, drop a jar file onto the executable");
-        println!();
-        println!("Press enter to exit");
-
-        io::stdin().read_line(&mut String::new()).unwrap();
-        std::process::exit(1);
-    }
-
-    let fname = std::path::Path::new(&args[1]);
-    let file = fs::File::open(&fname).unwrap();
-
-    let mut archive = zip::ZipArchive::new(file).unwrap();
+    let mut archive = zip::ZipArchive::new(tmpfile).expect("Error reading archive");
 
     let target_list = [
         "func_148254_d",
@@ -56,13 +41,6 @@ fn main() {
 
     let mut nasty_files: HashMap<String, Vec<String>> = HashMap::new();
 
-    println!(
-        "Scanning {} for RATs",
-        fname.file_name().unwrap().to_str().unwrap()
-    );
-
-    let mut pb = ProgressBar::new(archive.len().try_into().unwrap());
-
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).unwrap();
         let mut bytes = Vec::new();
@@ -81,16 +59,7 @@ fn main() {
             }
         }
     }
-    pb.finish_println("\n");
-    println!(
-        "{} file(s) found containing suspicious items",
-        nasty_files.len()
-    );
     for (file, words) in nasty_files.iter().sorted() {
-        println!("{} {:?}", file, words);
+        println!("{}\n{:?}", file, words);
     }
-    println!();
-    println!("Press enter to exit");
-
-    io::stdin().read_line(&mut String::new()).unwrap();
 }
