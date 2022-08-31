@@ -1,10 +1,9 @@
-extern crate reqwest;
-extern crate tempfile;
-extern crate zip;
-
 use itertools::Itertools;
+use reqwest;
 use std::{collections::HashMap, env, io::Read};
+use tempfile;
 use url::Url;
+use zip;
 
 fn main() {
     let url = Url::parse(&env::args().nth(1).expect("Must provide a URL")).expect("Invalid URL");
