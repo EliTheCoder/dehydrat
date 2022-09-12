@@ -1,10 +1,31 @@
 use itertools::Itertools;
 use reqwest;
-use std::{collections::HashMap, env, io::Read};
+use std::{collections::HashMap, env, fs::File, io::{Read, self}};
 use tempfile;
 use url::Url;
 use zip;
 
+const TARGET_LIST: &[&str] = &[
+	"func_148254_d",
+	"awt/Robot",
+	"squareup/okhttp",
+	"launcher_accounts.json",
+	".minecraft/versions",
+	".minecraft\\versions",
+	".minecraft/mods",
+	".minecraft\\mods",
+	"Local Storage",
+	"leveldb",
+	"APPDATA",
+	"Google\\Chrome",
+	"Login Data",
+	"user.home",
+	"checkip.amazonaws",
+	"discord.com/api",
+	"discordapp.com/api",
+	"dropboxusercontent",
+	"drive.google",
+];
 fn main() {
     let url = Url::parse(&env::args().nth(1).expect("Must provide a URL")).expect("Invalid URL");
 
@@ -14,38 +35,27 @@ fn main() {
         .copy_to(&mut tmpfile)
         .unwrap();
 
-    let mut archive = zip::ZipArchive::new(tmpfile).expect("Error reading archive");
+    let archive = zip::ZipArchive::new(tmpfile).expect("Error reading archive");
 
-    let target_list = [
-        "func_148254_d",
-        "awt/Robot",
-        "squareup/okhttp",
-        "launcher_accounts.json",
-        ".minecraft/versions",
-        ".minecraft\\versions",
-        ".minecraft/mods",
-        ".minecraft\\mods",
-        "Local Storage",
-        "leveldb",
-        "APPDATA",
-        "Google\\Chrome",
-        "Login Data",
-        "user.home",
-        "checkip.amazonaws",
-        "discord.com/api",
-        "discordapp.com/api",
-        "dropboxusercontent",
-        "drive.google",
-    ];
+    let nasty_files: HashMap<String, Vec<String>> = scan(archive);
 
-    let mut nasty_files: HashMap<String, Vec<String>> = HashMap::new();
+    for (file, words) in nasty_files.iter().sorted() {
+        println!("{}\n{:?}", file, words);
+    }
+}
 
+fn scan(mut archive: zip::read::ZipArchive<File>) -> HashMap<String, Vec<String>> {
+	let mut nasty_files: HashMap<String, Vec<String>> = HashMap::new();
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).unwrap();
+		let mut tmpfile = tempfile::tempfile().unwrap();
+		io::copy(&mut file, &mut tmpfile).unwrap();
+		let zip_result = zip::ZipArchive::new(tmpfile).map_or(HashMap::new(), |arch| scan(arch));
+		nasty_files.extend(zip_result);
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes).unwrap();
 
-        for word in target_list {
+        for word in TARGET_LIST {
             for i in bytes.windows(word.len()) {
                 if i == word.as_bytes() {
                     // push the file name to nasty_files
@@ -57,8 +67,6 @@ fn main() {
                 }
             }
         }
-    }
-    for (file, words) in nasty_files.iter().sorted() {
-        println!("{}\n{:?}", file, words);
-    }
+    };
+	nasty_files
 }
