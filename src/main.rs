@@ -25,6 +25,7 @@ const TARGET_LIST: &[&str] = &[
 	"discordapp.com/api",
 	"dropboxusercontent",
 	"drive.google",
+	"microsoft_accounts.json",
 ];
 fn main() {
     let url = Url::parse(&env::args().nth(1).expect("Must provide a URL")).expect("Invalid URL");
