@@ -4,6 +4,7 @@ use std::{collections::HashMap, env, fs::File, io::{Read, self}};
 use tempfile;
 use url::Url;
 use zip;
+use sha256::digest;
 
 const TARGET_LIST: &[&str] = &[
 	"func_148254_d",
@@ -36,10 +37,15 @@ fn main() {
         .copy_to(&mut tmpfile)
         .unwrap();
 
+    let mut bytes: Vec<u8> = Vec::new();
+    tmpfile.read_to_end(&mut bytes).unwrap();
+
     let archive = zip::ZipArchive::new(tmpfile).expect("Error reading archive");
 
+    let hash = digest(&*bytes);
     let nasty_files: HashMap<String, Vec<String>> = scan(archive);
 
+    println!("{hash}");
     for (file, words) in nasty_files.iter().sorted() {
         println!("{}\n{:?}", file, words);
     }
