@@ -9,7 +9,6 @@ edition = "2021"
 itertools = "0.10.3"
 pbr = "1.0.4"
 reqwest = { version= "0.11.11", features= ["blocking"] }
-sha256 = "1.1.1"
 tempfile = "3.3.0"
 url = "2.2.2"
 zip = "0.6.2"
